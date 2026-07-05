@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心动挑战 · 情侣互动小游戏</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --plum-dark:#20121F;
+    --plum-deep:#3A1F3D;
+    --wine:#5B2A55;
+    --rose:#EAA6C7;
+    --rose-soft:#F4C4DC;
+    --lavender:#C9A2DE;
+    --gold:#E9C98C;
+    --cream:#FBF2F5;
+    --text-soft:#F3DCE8;
+    --shadow-deep: 0 20px 60px rgba(20,5,25,0.55);
+    --s-light:#FFC1DC;
+    --s-deep:#D9427A;
+    --m-light:#D8C6FF;
+    --m-deep:#7C4FC4;
+    --sidebar-w: min(320px, 86vw);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(234,166,199,0.16), transparent 45%),
+      radial-gradient(circle at 85% 85%, rgba(201,162,222,0.18), transparent 50%),
+      linear-gradient(160deg, var(--plum-dark) 0%, var(--plum-deep) 55%, var(--wine) 100%);
+    font-family:'Quicksand', sans-serif;
+    color:var(--text-soft);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+    overflow-x:hidden;
+  }
+
+  .stage{
+    width:100%;
+    max-width:480px;
+    position:relative;
+    z-index:2;
+  }
+
+  /* ---------- floating ambient dice (signature element) ---------- */
+  .ambient{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:1;
+    perspective:900px;
+  }
+  .ambient .cube{
+    position:absolute;
+    width:46px;
+    height:46px;
+    transform-style:preserve-3d;
+    animation:float-rotate 14s ease-in-out infinite;
+    opacity:0.35;
+  }
+  .ambient .cube .face{
+    position:absolute;
+    width:46px;
+    height:46px;
+    border:1px solid rgba(233,201,140,0.5);
+    background:linear-gradient(135deg, rgba(234,166,199,0.25), rgba(201,162,222,0.15));
+    border-radius:8px;
+  }
+  .ambient .cube .f1{transform:translateZ(23px);}
+  .ambient .cube .f2{transform:rotateY(180deg) translateZ(23px);}
+  .ambient .cube .f3{transform:rotateY(90deg) translateZ(23px);}
+  .ambient .cube .f4{transform:rotateY(-90deg) translateZ(23px);}
+  .ambient .cube .f5{transform:rotateX(90deg) translateZ(23px);}
+  .ambient .cube .f6{transform:rotateX(-90deg) translateZ(23px);}
+
+  .ambient .c1{ top:8%; left:8%; animation-duration:16s; }
+  .ambient .c2{ top:70%; left:85%; animation-duration:19s; animation-delay:-4s; }
+  .ambient .c3{ top:40%; left:90%; animation-duration:13s; animation-delay:-7s; width:30px;height:30px; }
+  .ambient .c3 .face{width:30px;height:30px;}
+  .ambient .c3 .f1{transform:translateZ(15px);}
+  .ambient .c3 .f2{transform:rotateY(180deg) translateZ(15px);}
+  .ambient .c3 .f3{transform:rotateY(90deg) translateZ(15px);}
+  .ambient .c3 .f4{transform:rotateY(-90deg) translateZ(15px);}
+  .ambient .c3 .f5{transform:rotateX(90deg) translateZ(15px);}
+  .ambient .c3 .f6{transform:rotateX(-90deg) translateZ(15px);}
+  .ambient .c4{ top:82%; left:12%; animation-duration:21s; animation-delay:-10s; width:26px;height:26px;}
+  .ambient .c4 .face{width:26px;height:26px;}
+  .ambient .c4 .f1{transform:translateZ(13px);}
+  .ambient .c4 .f2{transform:rotateY(180deg) translateZ(13px);}
+  .ambient .c4 .f3{transform:rotateY(90deg) translateZ(13px);}
+  .ambient .c4 .f4{transform:rotateY(-90deg) translateZ(13px);}
+  .ambient .c4 .f5{transform:rotateX(90deg) translateZ(13px);}
+  .ambient .c4 .f6{transform:rotateX(-90deg) translateZ(13px);}
+
+  @keyframes float-rotate{
+    0%{ transform: translateY(0) rotateX(0) rotateY(0); }
+    50%{ transform: translateY(-24px) rotateX(180deg) rotateY(200deg); }
+    100%{ transform: translateY(0) rotateX(360deg) rotateY(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .ambient .cube{ animation:none; }
+  }
+
+  /* ---------- header ---------- */
+  .eyebrow{
+    text-align:center;
+    letter-spacing:0.35em;
+    text-transform:uppercase;
+    font-size:11px;
+    color:var(--gold);
+    margin-bottom:6px;
+    font-weight:600;
+  }
+  h1{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:44px;
+    text-align:center;
+    margin:0 0 6px;
+    background:linear-gradient(135deg, var(--rose-soft), var(--gold) 60%, var(--lavender));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .subtitle{
+    text-align:center;
+    font-size:14px;
+    color:var(--text-soft);
+    opacity:0.75;
+    margin-bottom:32px;
+  }
+
+  /* ---------- card ---------- */
+  /* Fixed height + absolutely positioned children so switching steps
+     never changes the card's box size — this is what stops the settled
+     ball from shifting when the dice step appears. */
+  .card{
+    position:relative;
+    width:100%;
+    height:520px;
+  }
+
+  .role-slot{
+    position:absolute;
+    top:14px; left:50%;
+    transform:translateX(-50%);
+  }
+
+  .step-area{
+    position:absolute;
+    top:96px; left:0; right:0; bottom:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .step{ display:none; width:100%; flex-direction:column; align-items:center; gap:20px; animation:fade-in 0.5s ease; }
+  .step.active{ display:flex; }
+  @keyframes fade-in{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  .instruction{
+    text-align:center;
+    font-size:15px;
+    line-height:1.7;
+    color:var(--text-soft);
+    opacity:0.9;
+  }
+  .instruction b{ color:var(--rose-soft); font-weight:600; }
+
+  .text-fade{
+    opacity:0 !important;
+    max-height:0 !important;
+    margin-top:0 !important;
+    margin-bottom:0 !important;
+    pointer-events:none;
+  }
+  .eyebrow, h1, .subtitle, .instruction{
+    overflow:hidden;
+    transition: opacity 0.6s ease, max-height 0.6s ease, margin 0.6s ease;
+  }
+
+  /* orbit stage: GO in center, S and M orbiting like two planets */
+  .orbit-stage{
+    position:relative;
+    width:100%;
+    height:250px;
+  }
+  .orbit-go{
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    width:118px; height:118px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-size:30px;
+    font-weight:600;
+    color:var(--plum-dark);
+    background:radial-gradient(circle at 35% 30%, var(--gold), var(--rose) 65%, var(--lavender) 100%);
+    box-shadow: 0 0 0 6px rgba(233,201,140,0.15), 0 15px 40px rgba(234,166,199,0.35);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    letter-spacing: 0.05em;
+    z-index:3;
+  }
+  .orbit-go:hover{ box-shadow: 0 0 0 8px rgba(233,201,140,0.2), 0 18px 50px rgba(234,166,199,0.45); }
+  .orbit-go.fade-out{ opacity:0; transform:translate(-50%,-50%) scale(0.3); pointer-events:none; }
+
+  /* frosted matte glass treatment shared by every ball state (orbiting / settled / flying) */
+  .orbit-orb, .settled-orb, .flying-orb{
+    position:relative;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    box-shadow:
+      0 10px 28px rgba(20,5,25,0.4),
+      inset 0 2px 5px rgba(255,255,255,0.3),
+      inset 0 -10px 18px rgba(0,0,0,0.22);
+  }
+  .orbit-orb::before, .settled-orb::before, .flying-orb::before{
+    content:"";
+    position:absolute;
+    top:10%; left:16%;
+    width:44%; height:26%;
+    background:rgba(255,255,255,0.38);
+    border-radius:50%;
+    filter:blur(5px);
+    pointer-events:none;
+  }
+
+  .orbit-orb{
+    position:absolute;
+    top:50%; left:50%;
+    width:92px; height:92px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:2;
+    transition:opacity 0.5s ease;
+    will-change:transform;
+  }
+  .orb-inner{
+    position:relative;
+    z-index:2;
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:36px;
+  }
+  .ripple{
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    border:2px solid rgba(255,255,255,0.75);
+    opacity:0;
+    pointer-events:none;
+  }
+  .orbit-orb.rippling .ripple.r1{ animation:ripple-wave 0.9s ease-out; }
+  .orbit-orb.rippling .ripple.r2{ animation:ripple-wave 0.9s ease-out 0.18s; }
+  @keyframes ripple-wave{
+    0%{ transform:scale(1); opacity:0.85; }
+    100%{ transform:scale(2.2); opacity:0; }
+  }
+  .orbit-orb.bounce .orb-inner{ animation:orb-bounce 0.6s ease; }
+  @keyframes orb-bounce{
+    0%{ transform:translateY(0) scale(1); }
+    30%{ transform:translateY(-20px) scale(1.06); }
+    55%{ transform:translateY(2px) scale(0.95); }
+    75%{ transform:translateY(-6px) scale(1.02); }
+    100%{ transform:translateY(0) scale(1); }
+  }
+  .orb-s{
+    background:linear-gradient(155deg, rgba(255,193,220,0.5), rgba(217,66,122,0.7));
+    color:var(--cream);
+  }
+  .orb-m{
+    background:linear-gradient(155deg, rgba(216,198,255,0.5), rgba(124,79,196,0.7));
+    color:var(--cream);
+  }
+
+  /* persistent slot at top of card that holds the winning orb after selection */
+  .role-slot{
+    height:78px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+  .settled-orb{
+    width:70px; height:70px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:28px;
+    opacity:0;
+  }
+  .settled-orb.show{ opacity:1; }
+
+  /* ghost element that visually flies from the orbit stage up into the slot */
+  .flying-orb{
+    position:fixed;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-weight:600;
+    z-index:999;
+    transition: top 0.75s cubic-bezier(.4,0,.2,1), left 0.75s cubic-bezier(.4,0,.2,1), width 0.75s ease, height 0.75s ease, font-size 0.75s ease;
+    pointer-events:none;
+  }
+  @keyframes pop-in{
+    0%{ transform:scale(0.4); opacity:0; }
+    60%{ transform:scale(1.15); opacity:1; }
+    100%{ transform:scale(1); opacity:1; }
+  }
+
+  /* dice reels */
+  .reels{ display:flex; gap:16px; width:100%; justify-content:center; }
+  .step#step-dice.active .reel{ animation: cube-enter 0.6s cubic-bezier(.34,1.56,.64,1) backwards; }
+  .step#step-dice.active .reel:nth-child(2){ animation-delay:0.1s; }
+  @keyframes cube-enter{
+    0%{ transform:rotate(-20deg) scale(0.6); opacity:0; }
+    100%{ transform:rotate(0) scale(1); opacity:1; }
+  }
+  .reel{
+    flex:1;
+    max-width:150px;
+    aspect-ratio:1/1;
+    border-radius:16px;
+    background:linear-gradient(160deg, rgba(255,255,255,0.09), rgba(255,255,255,0.02));
+    border:1px solid rgba(233,201,140,0.3);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:10px;
+    font-size:17px;
+    font-weight:600;
+    color:var(--cream);
+    position:relative;
+    overflow:hidden;
+  }
+  .reel .label{
+    position:absolute;
+    top:8px; left:0; right:0;
+    font-size:10px;
+    letter-spacing:0.25em;
+    text-transform:uppercase;
+    color:var(--gold);
+    opacity:0.8;
+  }
+  .reel .value{ transition:opacity 0.15s ease; }
+  .reel.rolling .value{ animation:reel-flicker 0.12s linear infinite; }
+  @keyframes reel-flicker{ 0%{opacity:1;} 50%{opacity:0.4;} 100%{opacity:1;} }
+
+  .result-card{
+    text-align:center;
+    padding:20px 18px;
+    border-radius:18px;
+    border:1px solid rgba(233,201,140,0.35);
+    background:linear-gradient(135deg, rgba(234,166,199,0.14), rgba(201,162,222,0.1));
+    width:100%;
+  }
+  .result-card .line1{ font-size:12px; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
+  .result-card .line2{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:28px;
+    color:var(--cream);
+    line-height:1.4;
+  }
+  .result-card .line2 em{ color:var(--rose-soft); font-style:normal; }
+
+  .btn-row{ display:flex; gap:12px; width:100%; }
+  .btn{
+    flex:1;
+    padding:14px 10px;
+    border-radius:14px;
+    border:1px solid rgba(233,201,140,0.4);
+    background:transparent;
+    color:var(--text-soft);
+    font-family:'Quicksand', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+  .btn:hover{ background:rgba(233,201,140,0.12); transform:translateY(-2px); }
+  .btn.primary{
+    background:linear-gradient(135deg, var(--rose), var(--lavender));
+    color:var(--plum-dark);
+    border:none;
+  }
+  .btn.primary:hover{ background:linear-gradient(135deg, var(--gold), var(--rose)); }
+
+  footer{
+    text-align:center;
+    font-size:11px;
+    color:var(--text-soft);
+    opacity:0.4;
+    margin-top:22px;
+    letter-spacing:0.15em;
+  }
+
+  @media (max-width:380px){
+    h1{font-size:34px;}
+    .orbit-go{width:100px;height:100px;font-size:26px;}
+    .orbit-orb{width:74px;height:74px;}
+    .orb-inner{font-size:28px;}
+  }
+
+  /* ================= sidebar ================= */
+  .sidebar-toggle{
+    position:fixed;
+    top:50%; left:0;
+    transform:translate(-50%,-50%);
+    width:46px; height:46px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,0.3);
+    background:linear-gradient(135deg, var(--gold), var(--rose));
+    color:var(--plum-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:19px;
+    cursor:pointer;
+    z-index:60;
+    box-shadow:0 8px 22px rgba(20,5,25,0.45);
+    transition: left 0.6s cubic-bezier(.16,1,.3,1), transform 0.25s ease;
+  }
+  .sidebar-toggle:hover{ transform:translate(-50%,-50%) scale(1.08); }
+  .sidebar-toggle.open{ left:var(--sidebar-w); }
+  .sidebar-toggle .icon-open, .sidebar-toggle .icon-close{ transition:opacity 0.3s ease, transform 0.3s ease; }
+  .sidebar-toggle .icon-close{ position:absolute; opacity:0; transform:rotate(-90deg); }
+  .sidebar-toggle.open .icon-open{ opacity:0; transform:rotate(90deg); }
+  .sidebar-toggle.open .icon-close{ opacity:1; transform:rotate(0); position:static; }
+
+  .sidebar-backdrop{
+    position:fixed; inset:0;
+    background:rgba(10,4,12,0.5);
+    backdrop-filter: blur(2px);
+    z-index:45;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.5s ease;
+  }
+  .sidebar-backdrop.show{ opacity:1; pointer-events:auto; }
+
+  .sidebar{
+    position:fixed;
+    top:0; left:0;
+    width:var(--sidebar-w);
+    height:100vh;
+    background:linear-gradient(165deg, rgba(28,14,32,0.88), rgba(48,26,58,0.92));
+    backdrop-filter: blur(22px) saturate(150%);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    border-right:1px solid rgba(255,255,255,0.12);
+    box-shadow: 16px 0 50px rgba(0,0,0,0.4);
+    z-index:50;
+    transform:translateX(calc(-1 * var(--sidebar-w) - 30px));
+    transition: transform 0.6s cubic-bezier(.16,1,.3,1);
+    overflow-y:auto;
+  }
+  .sidebar.open{ transform:translateX(0); }
+
+  .sidebar-inner{ padding:30px 22px 44px; display:flex; flex-direction:column; gap:8px; }
+
+  .sidebar-header{
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:22px;
+    color:var(--cream);
+    padding-bottom:16px;
+    margin-bottom:14px;
+    border-bottom:1px solid rgba(255,255,255,0.12);
+  }
+  .sidebar-close{
+    background:none; border:none; color:var(--text-soft); font-size:18px; cursor:pointer; opacity:0.65;
+    font-family:'Quicksand',sans-serif;
+  }
+  .sidebar-close:hover{ opacity:1; }
+
+  .sidebar-section{
+    opacity:0;
+    transform:translateX(-16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    margin-bottom:26px;
+  }
+  .sidebar.open .sidebar-section:nth-of-type(1){ transition-delay:0.15s; }
+  .sidebar.open .sidebar-section:nth-of-type(2){ transition-delay:0.22s; }
+  .sidebar.open .sidebar-section:nth-of-type(3){ transition-delay:0.29s; }
+  .sidebar.open .sidebar-section{ opacity:1; transform:translateX(0); }
+
+  .sidebar-section h3{
+    margin:0 0 14px;
+    font-size:12px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:600;
+  }
+
+  .theme-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:26px 12px; margin-bottom:6px; }
+  .theme-swatch{
+    height:50px;
+    border-radius:12px;
+    cursor:pointer;
+    position:relative;
+    border:2px solid rgba(255,255,255,0.15);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .theme-swatch:hover{ transform:translateY(-2px); }
+  .theme-swatch.active{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(233,201,140,0.4); }
+  .theme-swatch .name{
+    position:absolute; bottom:-19px; left:0; right:0;
+    text-align:center; font-size:9.5px; color:var(--text-soft); opacity:0.8;
+    white-space:nowrap;
+  }
+
+  .custom-block{ margin-bottom:16px; }
+  .custom-label{ font-size:12px; color:var(--text-soft); opacity:0.75; margin-bottom:8px; letter-spacing:0.03em; }
+  .chip-list{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 8px 6px 12px;
+    border-radius:20px;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.15);
+    font-size:13px;
+    color:var(--cream);
+  }
+  .chip button{
+    background:none; border:none; color:var(--text-soft); opacity:0.6; cursor:pointer;
+    font-size:13px; line-height:1; padding:2px;
+  }
+  .chip button:hover{ opacity:1; color:var(--rose-soft); }
+
+  .add-row{ display:flex; gap:8px; }
+  .add-row input{
+    flex:1;
+    min-width:0;
+    padding:9px 12px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.2);
+    background:rgba(255,255,255,0.06);
+    color:var(--cream);
+    font-family:'Quicksand', sans-serif;
+    font-size:13px;
+    outline:none;
+  }
+  .add-row input::placeholder{ color:rgba(255,255,255,0.4); }
+  .add-row input:focus{ border-color:var(--gold); }
+  .add-row button{
+    padding:9px 14px;
+    border-radius:10px;
+    border:none;
+    background:linear-gradient(135deg, var(--rose), var(--lavender));
+    color:var(--plum-dark);
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .add-row button:hover{ background:linear-gradient(135deg, var(--gold), var(--rose)); }
+
+  .reset-btn{
+    width:100%;
+    padding:10px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.2);
+    background:transparent;
+    color:var(--text-soft);
+    font-size:12px;
+    cursor:pointer;
+    margin-top:2px;
+  }
+  .reset-btn:hover{ background:rgba(255,255,255,0.08); }
+
+  .lang-toggle{ display:flex; gap:10px; }
+  .lang-btn{
+    flex:1;
+    padding:10px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.2);
+    background:transparent;
+    color:var(--text-soft);
+    font-size:13px;
+    cursor:pointer;
+    font-weight:600;
+    font-family:'Quicksand', sans-serif;
+  }
+  .lang-btn.active{
+    background:linear-gradient(135deg, var(--rose), var(--lavender));
+    color:var(--plum-dark);
+    border:none;
+  }
+</style>
+</head>
+<body>
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Settings">
+  <span class="icon-open">☰</span>
+  <span class="icon-close">✕</span>
+</button>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-inner">
+    <div class="sidebar-header">
+      <span data-i18n="settingsTitle">设置</span>
+      <button class="sidebar-close" id="sidebarClose">✕</button>
+    </div>
+
+    <section class="sidebar-section">
+      <h3 data-i18n="themeTitle">主题配色</h3>
+      <div class="theme-grid" id="themeGrid"></div>
+    </section>
+
+    <section class="sidebar-section">
+      <h3 data-i18n="customTitle">自定义内容</h3>
+
+      <div class="custom-block">
+        <div class="custom-label" data-i18n="actionsLabel">动作</div>
+        <div class="chip-list" id="actionChips"></div>
+        <div class="add-row">
+          <input type="text" id="actionInput" data-i18n-placeholder="actionPlaceholder" placeholder="输入新动作...">
+          <button id="addActionBtn" data-i18n="addBtn">添加</button>
+        </div>
+      </div>
+
+      <div class="custom-block">
+        <div class="custom-label" data-i18n="partsLabel">部位</div>
+        <div class="chip-list" id="partChips"></div>
+        <div class="add-row">
+          <input type="text" id="partInput" data-i18n-placeholder="partPlaceholder" placeholder="输入新部位...">
+          <button id="addPartBtn" data-i18n="addBtn">添加</button>
+        </div>
+      </div>
+
+      <button class="reset-btn" id="resetListsBtn" data-i18n="resetBtn">恢复默认</button>
+    </section>
+
+    <section class="sidebar-section">
+      <h3 data-i18n="langTitle">系统语言</h3>
+      <div class="lang-toggle">
+        <button class="lang-btn active" data-lang="zh" id="langZh">中文</button>
+        <button class="lang-btn" data-lang="en" id="langEn">English</button>
+      </div>
+    </section>
+  </div>
+</aside>
+
+<div class="ambient" aria-hidden="true">
+  <div class="cube c1"><div class="face f1"></div><div class="face f2"></div><div class="face f3"></div><div class="face f4"></div><div class="face f5"></div><div class="face f6"></div></div>
+  <div class="cube c2"><div class="face f1"></div><div class="face f2"></div><div class="face f3"></div><div class="face f4"></div><div class="face f5"></div><div class="face f6"></div></div>
+  <div class="cube c3"><div class="face f1"></div><div class="face f2"></div><div class="face f3"></div><div class="face f4"></div><div class="face f5"></div><div class="face f6"></div></div>
+  <div class="cube c4"><div class="face f1"></div><div class="face f2"></div><div class="face f3"></div><div class="face f4"></div><div class="face f5"></div><div class="face f6"></div></div>
+</div>
+
+<div class="stage">
+  <div class="eyebrow" data-i18n="eyebrow">Couple's Game</div>
+  <h1 data-i18n="title">心动挑战</h1>
+  <p class="subtitle" data-i18n="subtitle"> </p>
+
+  <div class="card">
+
+    <div class="role-slot" id="roleSlot"></div>
+
+    <div class="step-area">
+
+    <!-- Step 1+2: GO + S/M orbit reveal -->
+    <div class="step active" id="step-role">
+      <p class="instruction" data-i18n-html="instruction">两人先玩一局<b>猜拳</b>，输的人点击 <b>GO</b>，<br>看看这一局你是 <b>S</b> 还是 <b>M</b>。</p>
+
+      <div class="orbit-stage" id="orbitStage">
+        <button class="orbit-go" id="goBtn">GO</button>
+        <div class="orbit-orb orb-s" id="orbS">
+          <span class="ripple r1"></span>
+          <span class="ripple r2"></span>
+          <span class="orb-inner">S</span>
+        </div>
+        <div class="orbit-orb orb-m" id="orbM">
+          <span class="ripple r1"></span>
+          <span class="ripple r2"></span>
+          <span class="orb-inner">M</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: dice roll -->
+    <div class="step" id="step-dice">
+      <div class="reels">
+        <div class="reel" id="reelAction"><span class="label" data-i18n="actionLabel">动作</span><span class="value">？</span></div>
+        <div class="reel" id="reelPart"><span class="label" data-i18n="partLabel">部位</span><span class="value">？</span></div>
+      </div>
+      <button class="btn primary" id="rollBtn" style="width:100%;" data-i18n="rollBtn">摇骰子</button>
+    </div>
+
+    <!-- Step 4: result -->
+    <div class="step" id="step-result">
+      <div class="result-card">
+        <div class="line1" data-i18n="resultLine1">本局挑战</div>
+        <div class="line2" id="resultText">——</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="rerollBtn" data-i18n="rerollBtn">再摇一次</button>
+        <button class="btn primary" id="restartBtn" data-i18n="restartBtn">新一局</button>
+      </div>
+    </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  const DEFAULTS = {
+    zh: {
+      actions: ["亲吻", "轻咬", "抚摸", "按摩"],
+      parts: ["额头", "脸颊", "耳朵", "后颈", "肩膀", "手背", "手心", "发梢"]
+    },
+    en: {
+      actions: ["Kiss", "Nibble", "Caress", "Massage"],
+      parts: ["Forehead", "Cheek", "Ear", "Nape", "Shoulder", "Back of hand", "Palm", "Hair"]
+    }
+  };
+
+  let currentLang = 'zh';
+
+  // Each list item is either {type:'default', index} — which always resolves to
+  // the current language's default word at that index — or {type:'custom', text}
+  // for words the user typed themselves, which never change with language.
+  let actionState = DEFAULTS.zh.actions.map((_, i) => ({ type: 'default', index: i }));
+  let partState = DEFAULTS.zh.parts.map((_, i) => ({ type: 'default', index: i }));
+
+  function resolveActionText(item, lang){
+    return item.type === 'default' ? DEFAULTS[lang].actions[item.index] : item.text;
+  }
+  function resolvePartText(item, lang){
+    return item.type === 'default' ? DEFAULTS[lang].parts[item.index] : item.text;
+  }
+
+  let ACTIONS = actionState.map(item => resolveActionText(item, currentLang));
+  let PARTS = partState.map(item => resolvePartText(item, currentLang));
+
+  function syncLists(){
+    ACTIONS = actionState.map(item => resolveActionText(item, currentLang));
+    PARTS = partState.map(item => resolvePartText(item, currentLang));
+    renderChips();
+  }
+
+  const I18N = {
+    zh: {
+      eyebrow: "Couple's Game",
+      title: "心动挑战",
+      subtitle: "先猜拳定输赢，输的一方来接受挑战",
+      instruction: "两人先玩一局<b>猜拳</b>，输的人点击 <b>GO</b>，<br>看看这一局你是 <b>S</b> 还是 <b>M</b>。",
+      actionLabel: "动作",
+      partLabel: "部位",
+      rollBtn: "摇骰子",
+      resultLine1: "本局挑战",
+      rerollBtn: "再摇一次",
+      restartBtn: "新一局",
+      settingsTitle: "设置",
+      themeTitle: "主题配色",
+      customTitle: "自定义内容",
+      actionsLabel: "动作",
+      partsLabel: "部位",
+      addBtn: "添加",
+      resetBtn: "恢复默认",
+      langTitle: "系统语言",
+      actionPlaceholder: "输入新动作...",
+      partPlaceholder: "输入新部位...",
+      resultTemplateS: (part, action) => `对TA的<em>${part}</em>，轻轻<em>${action}</em>`,
+      resultTemplateM: (part, action) => `让对方在你的<em>${part}</em>上，<em>${action}</em>`
+    },
+    en: {
+      eyebrow: "Couple's Game",
+      title: "Heart Dare",
+      subtitle: "Rock-paper-scissors decides who takes the dare",
+      instruction: "Play <b>rock-paper-scissors</b> first. The loser taps <b>GO</b> —<br>see if this round you're <b>S</b> or <b>M</b>.",
+      actionLabel: "Action",
+      partLabel: "Spot",
+      rollBtn: "Roll",
+      resultLine1: "This Round",
+      rerollBtn: "Reroll",
+      restartBtn: "New Round",
+      settingsTitle: "Settings",
+      themeTitle: "Theme",
+      customTitle: "Customize",
+      actionsLabel: "Actions",
+      partsLabel: "Body Parts",
+      addBtn: "Add",
+      resetBtn: "Reset to default",
+      langTitle: "Language",
+      actionPlaceholder: "Add new action...",
+      partPlaceholder: "Add new spot...",
+      resultTemplateS: (part, action) => `Gently <em>${action}</em> their <em>${part}</em>`,
+      resultTemplateM: (part, action) => `Let them <em>${action}</em> your <em>${part}</em>`
+    }
+  };
+
+  const THEMES = [
+    {
+      key: 'romance',
+      name: { zh: '浪漫粉紫', en: 'Rose Purple' },
+      vars: {
+        '--plum-dark': '#20121F', '--plum-deep': '#3A1F3D', '--wine': '#5B2A55',
+        '--rose': '#EAA6C7', '--rose-soft': '#F4C4DC', '--lavender': '#C9A2DE',
+        '--gold': '#E9C98C', '--cream': '#FBF2F5', '--text-soft': '#F3DCE8',
+        '--s-light': '#FFC1DC', '--s-deep': '#D9427A', '--m-light': '#D8C6FF', '--m-deep': '#7C4FC4'
+      },
+      swatch: 'linear-gradient(135deg, #EAA6C7, #C9A2DE)'
+    },
+    {
+      key: 'night',
+      name: { zh: '暗夜靛蓝', en: 'Night Blue' },
+      vars: {
+        '--plum-dark': '#0B1220', '--plum-deep': '#15213A', '--wine': '#1F3A5F',
+        '--rose': '#6FA8DC', '--rose-soft': '#A9CDEF', '--lavender': '#8E7CC3',
+        '--gold': '#F0C987', '--cream': '#F5F8FF', '--text-soft': '#DCE6F5',
+        '--s-light': '#BFD9FF', '--s-deep': '#3568B0', '--m-light': '#D6C6FF', '--m-deep': '#6B4FC4'
+      },
+      swatch: 'linear-gradient(135deg, #6FA8DC, #8E7CC3)'
+    },
+    {
+      key: 'sunset',
+      name: { zh: '落日橙金', en: 'Sunset Gold' },
+      vars: {
+        '--plum-dark': '#2B1509', '--plum-deep': '#3D2410', '--wine': '#6B3A1A',
+        '--rose': '#F0A868', '--rose-soft': '#F7C99A', '--lavender': '#E85D5D',
+        '--gold': '#FFD98C', '--cream': '#FFF6EC', '--text-soft': '#FBE7D2',
+        '--s-light': '#FFD9A8', '--s-deep': '#E0703A', '--m-light': '#F4B8C9', '--m-deep': '#B5455C'
+      },
+      swatch: 'linear-gradient(135deg, #F0A868, #E85D5D)'
+    },
+    {
+      key: 'mint',
+      name: { zh: '薄荷森绿', en: 'Mint Forest' },
+      vars: {
+        '--plum-dark': '#0E211C', '--plum-deep': '#173A30', '--wine': '#215446',
+        '--rose': '#7FD9B6', '--rose-soft': '#B7EFDA', '--lavender': '#4E8C7A',
+        '--gold': '#E9D98C', '--cream': '#F2FBF7', '--text-soft': '#DCF3E9',
+        '--s-light': '#FFD3E0', '--s-deep': '#D9527A', '--m-light': '#C9F2E2', '--m-deep': '#2E8B6F'
+      },
+      swatch: 'linear-gradient(135deg, #7FD9B6, #4E8C7A)'
+    },
+    {
+      key: 'rouge',
+      name: { zh: '胭脂暗黑', en: 'Rouge Noir' },
+      vars: {
+        '--plum-dark': '#160B10', '--plum-deep': '#2A1018', '--wine': '#4A1522',
+        '--rose': '#E8556F', '--rose-soft': '#F2A6B5', '--lavender': '#B23A55',
+        '--gold': '#E8B37A', '--cream': '#FBEEF0', '--text-soft': '#F2D9DE',
+        '--s-light': '#FFD1DC', '--s-deep': '#C23A5A', '--m-light': '#D8C0FF', '--m-deep': '#6A3FA0'
+      },
+      swatch: 'linear-gradient(135deg, #E8556F, #B23A55)'
+    }
+  ];
+
+  let currentTheme = 'romance';
+
+  const stepRole = document.getElementById('step-role');
+  const stepDice = document.getElementById('step-dice');
+  const stepResult = document.getElementById('step-result');
+
+  const orbitStage = document.getElementById('orbitStage');
+  const goBtn = document.getElementById('goBtn');
+  const orbS = document.getElementById('orbS');
+  const orbM = document.getElementById('orbM');
+  const roleSlot = document.getElementById('roleSlot');
+  const rollBtn = document.getElementById('rollBtn');
+  const rerollBtn = document.getElementById('rerollBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const reelAction = document.getElementById('reelAction').querySelector('.value');
+  const reelPart = document.getElementById('reelPart').querySelector('.value');
+  const resultText = document.getElementById('resultText');
+
+  let currentRole = null; // 'S' or 'M'
+
+  function showStep(step){
+    [stepRole, stepDice, stepResult].forEach(s => s.classList.remove('active'));
+    step.classList.add('active');
+  }
+
+  function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function positionOrb(el, angle, radius){
+    const x = radius * Math.cos(angle);
+    const y = radius * Math.sin(angle) * 0.55;
+    el.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+  }
+
+  function getMaxRadius(){
+    const stageWidth = orbitStage.clientWidth;
+    if(!stageWidth) return 100;
+    return Math.max(70, Math.min(130, stageWidth / 2 - 50));
+  }
+
+  const textEls = document.querySelectorAll('.eyebrow, h1, .subtitle, .instruction');
+
+  function hideText(){
+    textEls.forEach(el => {
+      el.style.maxHeight = el.scrollHeight + 'px';
+    });
+    requestAnimationFrame(() => {
+      textEls.forEach(el => el.classList.add('text-fade'));
+    });
+  }
+  function showText(){
+    textEls.forEach(el => {
+      el.classList.remove('text-fade');
+      el.style.maxHeight = el.scrollHeight + 'px';
+    });
+  }
+
+  function initOrbit(){
+    goBtn.classList.remove('fade-out');
+    goBtn.disabled = false;
+    orbS.style.opacity = 1;
+    orbM.style.opacity = 1;
+    orbS.classList.remove('bounce', 'rippling');
+    orbM.classList.remove('bounce', 'rippling');
+    const r = getMaxRadius();
+    positionOrb(orbS, Math.PI, r);
+    positionOrb(orbM, 0, r);
+    roleSlot.innerHTML = '';
+    orbitStage.style.visibility = 'visible';
+    showText();
+  }
+  initOrbit();
+
+  goBtn.addEventListener('click', () => {
+    goBtn.disabled = true;
+    hideText();
+
+    setTimeout(() => {
+      goBtn.classList.add('fade-out');
+
+      const duration = 2200;
+      const R0 = getMaxRadius();
+      const totalRotation = Math.PI * 2 * 2.5; // 顺时针 2.5 圈
+      const start = performance.now();
+
+      function frame(now){
+        const t = Math.min((now - start) / duration, 1);
+        const radius = R0 * (1 - t * t); // 半径逐渐收缩，越靠近结尾收得越快
+        const angleOffset = totalRotation * t;
+        positionOrb(orbS, Math.PI + angleOffset, radius);
+        positionOrb(orbM, angleOffset, radius);
+        if(t < 1){
+          requestAnimationFrame(frame);
+        } else {
+          finishMerge();
+        }
+      }
+      requestAnimationFrame(frame);
+    }, 620);
+  });
+
+  function finishMerge(){
+    currentRole = Math.random() < 0.5 ? 'S' : 'M';
+    const winner = currentRole === 'S' ? orbS : orbM;
+    const loser = currentRole === 'S' ? orbM : orbS;
+
+    // loser fades away immediately
+    loser.style.opacity = 0;
+
+    // winner bounces + ripples in place, holds for ~1s total
+    winner.classList.add('bounce', 'rippling');
+
+    setTimeout(() => {
+      flyOrbToSlot(winner, currentRole);
+    }, 1000);
+  }
+
+  function flyOrbToSlot(orbEl, role){
+    const startRect = orbEl.getBoundingClientRect();
+
+    const flying = document.createElement('div');
+    flying.className = 'flying-orb ' + (role === 'S' ? 'orb-s' : 'orb-m');
+    flying.textContent = role;
+    flying.style.left = startRect.left + 'px';
+    flying.style.top = startRect.top + 'px';
+    flying.style.width = startRect.width + 'px';
+    flying.style.height = startRect.height + 'px';
+    flying.style.fontSize = '36px';
+    document.body.appendChild(flying);
+
+    // hide the whole orbit stage now that the flying ghost has taken over visually
+    orbitStage.style.visibility = 'hidden';
+
+    // reserve the slot's size so we can measure its target position
+    const slotRect = roleSlot.getBoundingClientRect();
+    const targetSize = 70;
+    const targetLeft = slotRect.left + slotRect.width / 2 - targetSize / 2;
+    const targetTop = slotRect.top + slotRect.height / 2 - targetSize / 2;
+
+    requestAnimationFrame(() => {
+      flying.style.left = targetLeft + 'px';
+      flying.style.top = targetTop + 'px';
+      flying.style.width = targetSize + 'px';
+      flying.style.height = targetSize + 'px';
+      flying.style.fontSize = '26px';
+    });
+
+    setTimeout(() => {
+      flying.remove();
+      const settled = document.createElement('div');
+      settled.className = 'settled-orb show ' + (role === 'S' ? 'orb-s' : 'orb-m');
+      settled.textContent = role;
+      roleSlot.appendChild(settled);
+      showStep(stepDice);
+    }, 780);
+  }
+
+  function rollReel(el, options, duration){
+    return new Promise(resolve => {
+      el.parentElement.classList.add('rolling');
+      const interval = setInterval(() => {
+        el.textContent = pick(options);
+      }, 70);
+      setTimeout(() => {
+        clearInterval(interval);
+        const final = pick(options);
+        el.textContent = final;
+        el.parentElement.classList.remove('rolling');
+        resolve(final);
+      }, duration);
+    });
+  }
+
+  async function doRoll(){
+    rollBtn.disabled = true;
+    const [action, part] = await Promise.all([
+      rollReel(reelAction, ACTIONS, 900),
+      rollReel(reelPart, PARTS, 1200)
+    ]);
+    if(currentRole === 'S'){
+      resultText.innerHTML = I18N[currentLang].resultTemplateS(part, action);
+    } else {
+      resultText.innerHTML = I18N[currentLang].resultTemplateM(part, action);
+    }
+    setTimeout(() => {
+      rollBtn.disabled = false;
+      showStep(stepResult);
+    }, 1000);
+  }
+
+  rollBtn.addEventListener('click', doRoll);
+  rerollBtn.addEventListener('click', () => { showStep(stepDice); doRoll(); });
+
+  restartBtn.addEventListener('click', () => {
+    reelAction.textContent = currentLang === 'zh' ? '？' : '?';
+    reelPart.textContent = currentLang === 'zh' ? '？' : '?';
+    showStep(stepRole);
+    initOrbit();
+  });
+
+  /* ================= sidebar: theme / customize / language ================= */
+
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+  const sidebarClose = document.getElementById('sidebarClose');
+  const themeGrid = document.getElementById('themeGrid');
+  const actionChips = document.getElementById('actionChips');
+  const partChips = document.getElementById('partChips');
+  const actionInput = document.getElementById('actionInput');
+  const partInput = document.getElementById('partInput');
+  const addActionBtn = document.getElementById('addActionBtn');
+  const addPartBtn = document.getElementById('addPartBtn');
+  const resetListsBtn = document.getElementById('resetListsBtn');
+  const langZh = document.getElementById('langZh');
+  const langEn = document.getElementById('langEn');
+
+  function openSidebar(){
+    sidebar.classList.add('open');
+    sidebarToggle.classList.add('open');
+    sidebarBackdrop.classList.add('show');
+  }
+  function closeSidebar(){
+    sidebar.classList.remove('open');
+    sidebarToggle.classList.remove('open');
+    sidebarBackdrop.classList.remove('show');
+  }
+  sidebarToggle.addEventListener('click', () => {
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  sidebarClose.addEventListener('click', closeSidebar);
+  sidebarBackdrop.addEventListener('click', closeSidebar);
+
+  /* ---- theme ---- */
+  function renderThemeGrid(){
+    themeGrid.innerHTML = '';
+    THEMES.forEach(theme => {
+      const swatch = document.createElement('div');
+      swatch.className = 'theme-swatch' + (theme.key === currentTheme ? ' active' : '');
+      swatch.style.background = theme.swatch;
+      swatch.title = theme.name[currentLang];
+      const label = document.createElement('div');
+      label.className = 'name';
+      label.textContent = theme.name[currentLang];
+      swatch.appendChild(label);
+      swatch.addEventListener('click', () => applyTheme(theme.key));
+      themeGrid.appendChild(swatch);
+    });
+  }
+
+  function applyTheme(key){
+    const theme = THEMES.find(t => t.key === key);
+    if(!theme) return;
+    currentTheme = key;
+    Object.entries(theme.vars).forEach(([varName, value]) => {
+      document.documentElement.style.setProperty(varName, value);
+    });
+    renderThemeGrid();
+  }
+
+  /* ---- customize action / part lists ---- */
+  function renderChips(){
+    actionChips.innerHTML = '';
+    actionState.forEach((item, idx) => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.innerHTML = `<span>${resolveActionText(item, currentLang)}</span>`;
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = '✕';
+      removeBtn.addEventListener('click', () => {
+        if(actionState.length <= 2) return;
+        actionState.splice(idx, 1);
+        syncLists();
+      });
+      chip.appendChild(removeBtn);
+      actionChips.appendChild(chip);
+    });
+
+    partChips.innerHTML = '';
+    partState.forEach((item, idx) => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.innerHTML = `<span>${resolvePartText(item, currentLang)}</span>`;
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = '✕';
+      removeBtn.addEventListener('click', () => {
+        if(partState.length <= 2) return;
+        partState.splice(idx, 1);
+        syncLists();
+      });
+      chip.appendChild(removeBtn);
+      partChips.appendChild(chip);
+    });
+  }
+
+  function addAction(){
+    const val = actionInput.value.trim();
+    if(!val) return;
+    actionState.push({ type: 'custom', text: val });
+    actionInput.value = '';
+    syncLists();
+  }
+  function addPart(){
+    const val = partInput.value.trim();
+    if(!val) return;
+    partState.push({ type: 'custom', text: val });
+    partInput.value = '';
+    syncLists();
+  }
+
+  addActionBtn.addEventListener('click', addAction);
+  addPartBtn.addEventListener('click', addPart);
+  actionInput.addEventListener('keydown', e => { if(e.key === 'Enter') addAction(); });
+  partInput.addEventListener('keydown', e => { if(e.key === 'Enter') addPart(); });
+
+  resetListsBtn.addEventListener('click', () => {
+    actionState = DEFAULTS.zh.actions.map((_, i) => ({ type: 'default', index: i }));
+    partState = DEFAULTS.zh.parts.map((_, i) => ({ type: 'default', index: i }));
+    syncLists();
+  });
+
+  /* ---- language ---- */
+  function applyLanguage(lang){
+    currentLang = lang;
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if(I18N[lang][key] !== undefined) el.textContent = I18N[lang][key];
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      const key = el.getAttribute('data-i18n-html');
+      if(I18N[lang][key] !== undefined) el.innerHTML = I18N[lang][key];
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if(I18N[lang][key] !== undefined) el.placeholder = I18N[lang][key];
+    });
+
+    syncLists();
+    renderThemeGrid();
+
+    langZh.classList.toggle('active', lang === 'zh');
+    langEn.classList.toggle('active', lang === 'en');
+
+    // reset unfilled reel placeholders to match new language style
+    if(reelAction.textContent === '？' || reelAction.textContent === '?') reelAction.textContent = lang === 'zh' ? '？' : '?';
+    if(reelPart.textContent === '？' || reelPart.textContent === '?') reelPart.textContent = lang === 'zh' ? '？' : '?';
+  }
+
+  langZh.addEventListener('click', () => applyLanguage('zh'));
+  langEn.addEventListener('click', () => applyLanguage('en'));
+
+  renderThemeGrid();
+  syncLists();
+</script>
+
+</body>
+</html>
